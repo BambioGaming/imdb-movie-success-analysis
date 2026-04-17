@@ -1,21 +1,21 @@
 {
   "config": {
-    "min_votes": 500,
-    "year_start": 1894,
-    "year_end": 1929,
+    "min_votes": 0,
+    "year_start": 1920,
+    "year_end": 2025,
     "success_rating": 7.0,
     "success_votes": 25000,
     "test_size": 0.2,
-    "cv_folds": 5,
+    "cv_folds": 3,
     "random_state": 42,
-    "mode": "full",
-    "sample_size": null
+    "mode": "fast",
+    "sample_size": 50000
   },
   "dataset": {
-    "rows": 522,
-    "success_rate": 0.023,
-    "train_rows": 417,
-    "test_rows": 105,
+    "rows": 320,
+    "success_rate": 0.25,
+    "train_rows": 256,
+    "test_rows": 64,
     "feature_columns": [
       "startYear",
       "runtimeMinutes",
@@ -24,210 +24,277 @@
       "genres"
     ],
     "class_balance": {
-      "positive_rate": 0.023,
+      "positive_rate": 0.25,
       "class_counts": {
-        "0": 510,
-        "1": 12
+        "0": 240,
+        "1": 80
       }
     },
     "note": "averageRating and numVotes define the target and are intentionally excluded from the predictors to avoid target leakage."
   },
   "comparison": [
     {
-      "model_name": "KNN",
-      "accuracy": 0.981,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.6092,
-      "cv_accuracy": 0.976,
-      "cv_f1": 0.0,
-      "cv_roc_auc": 0.3981,
+      "model_name": "Gradient Boosting",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
+      "cv_accuracy": 0.9223,
+      "cv_f1": 0.8513,
+      "cv_roc_auc": 0.9741,
       "imbalance_strategy": "standard"
     },
     {
-      "model_name": "Gradient Boosting",
-      "accuracy": 0.9714,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.5534,
-      "cv_accuracy": 0.964,
-      "cv_f1": 0.0,
-      "cv_roc_auc": 0.5958,
+      "model_name": "KNN",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
+      "cv_accuracy": 0.8127,
+      "cv_f1": 0.6037,
+      "cv_roc_auc": 0.9435,
       "imbalance_strategy": "standard"
     },
     {
       "model_name": "Random Forest (Unbalanced)",
-      "accuracy": 0.981,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.5437,
-      "cv_accuracy": 0.976,
-      "cv_f1": 0.0,
-      "cv_roc_auc": 0.5802,
+      "accuracy": 0.8594,
+      "precision": 0.7059,
+      "recall": 0.75,
+      "f1_score": 0.7273,
+      "roc_auc": 0.901,
+      "cv_accuracy": 0.7267,
+      "cv_f1": 0.4284,
+      "cv_roc_auc": 0.8456,
       "imbalance_strategy": "standard"
     },
     {
-      "model_name": "Logistic Regression (Unbalanced)",
-      "accuracy": 0.981,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.5243,
-      "cv_accuracy": 0.976,
-      "cv_f1": 0.0,
-      "cv_roc_auc": 0.5827,
-      "imbalance_strategy": "standard"
-    },
-    {
-      "model_name": "Decision Tree",
-      "accuracy": 0.6952,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.3544,
-      "cv_accuracy": 0.7074,
-      "cv_f1": 0.0302,
-      "cv_roc_auc": 0.4611,
+      "model_name": "Random Forest",
+      "accuracy": 0.7188,
+      "precision": 0.4706,
+      "recall": 1.0,
+      "f1_score": 0.64,
+      "roc_auc": 0.9102,
+      "cv_accuracy": 0.7697,
+      "cv_f1": 0.6709,
+      "cv_roc_auc": 0.8543,
       "imbalance_strategy": "balanced"
     },
     {
       "model_name": "Logistic Regression",
-      "accuracy": 0.6952,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.301,
-      "cv_accuracy": 0.7722,
-      "cv_f1": 0.0367,
-      "cv_roc_auc": 0.5556,
+      "accuracy": 0.7031,
+      "precision": 0.4571,
+      "recall": 1.0,
+      "f1_score": 0.6275,
+      "roc_auc": 0.8008,
+      "cv_accuracy": 0.7619,
+      "cv_f1": 0.6785,
+      "cv_roc_auc": 0.845,
       "imbalance_strategy": "balanced"
     },
     {
-      "model_name": "Random Forest",
-      "accuracy": 0.9524,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.2961,
-      "cv_accuracy": 0.964,
-      "cv_f1": 0.0,
-      "cv_roc_auc": 0.5208,
+      "model_name": "Decision Tree",
+      "accuracy": 0.7031,
+      "precision": 0.4571,
+      "recall": 1.0,
+      "f1_score": 0.6275,
+      "roc_auc": 0.7624,
+      "cv_accuracy": 0.7501,
+      "cv_f1": 0.6357,
+      "cv_roc_auc": 0.8273,
       "imbalance_strategy": "balanced"
+    },
+    {
+      "model_name": "Logistic Regression (Unbalanced)",
+      "accuracy": 0.7031,
+      "precision": 0.4211,
+      "recall": 0.5,
+      "f1_score": 0.4571,
+      "roc_auc": 0.8008,
+      "cv_accuracy": 0.7499,
+      "cv_f1": 0.4572,
+      "cv_roc_auc": 0.8435,
+      "imbalance_strategy": "standard"
     }
   ],
   "results_summary": [
     {
-      "model_name": "KNN",
-      "f1_score": 0.0,
-      "roc_auc": 0.6092,
-      "accuracy": 0.981,
-      "cv_f1": 0.0,
+      "model_name": "Gradient Boosting",
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
+      "accuracy": 1.0,
+      "cv_f1": 0.8513,
       "imbalance_strategy": "standard"
     },
     {
-      "model_name": "Gradient Boosting",
-      "f1_score": 0.0,
-      "roc_auc": 0.5534,
-      "accuracy": 0.9714,
-      "cv_f1": 0.0,
+      "model_name": "KNN",
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
+      "accuracy": 1.0,
+      "cv_f1": 0.6037,
       "imbalance_strategy": "standard"
     },
     {
       "model_name": "Random Forest (Unbalanced)",
-      "f1_score": 0.0,
-      "roc_auc": 0.5437,
-      "accuracy": 0.981,
-      "cv_f1": 0.0,
+      "f1_score": 0.7273,
+      "roc_auc": 0.901,
+      "accuracy": 0.8594,
+      "cv_f1": 0.4284,
       "imbalance_strategy": "standard"
     },
     {
-      "model_name": "Logistic Regression (Unbalanced)",
-      "f1_score": 0.0,
-      "roc_auc": 0.5243,
-      "accuracy": 0.981,
-      "cv_f1": 0.0,
-      "imbalance_strategy": "standard"
-    },
-    {
-      "model_name": "Decision Tree",
-      "f1_score": 0.0,
-      "roc_auc": 0.3544,
-      "accuracy": 0.6952,
-      "cv_f1": 0.0302,
+      "model_name": "Random Forest",
+      "f1_score": 0.64,
+      "roc_auc": 0.9102,
+      "accuracy": 0.7188,
+      "cv_f1": 0.6709,
       "imbalance_strategy": "balanced"
     },
     {
       "model_name": "Logistic Regression",
-      "f1_score": 0.0,
-      "roc_auc": 0.301,
-      "accuracy": 0.6952,
-      "cv_f1": 0.0367,
+      "f1_score": 0.6275,
+      "roc_auc": 0.8008,
+      "accuracy": 0.7031,
+      "cv_f1": 0.6785,
+      "imbalance_strategy": "balanced"
+    },
+    {
+      "model_name": "Decision Tree",
+      "f1_score": 0.6275,
+      "roc_auc": 0.7624,
+      "accuracy": 0.7031,
+      "cv_f1": 0.6357,
       "imbalance_strategy": "balanced"
     }
   ],
   "best_model": {
-    "model_name": "KNN",
+    "model_name": "Gradient Boosting",
     "test_metrics": {
-      "accuracy": 0.981,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1_score": 0.0,
-      "roc_auc": 0.6092,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "roc_auc": 1.0,
       "confusion_matrix": [
         [
-          103,
+          48,
           0
         ],
         [
-          2,
-          0
+          0,
+          16
         ]
       ],
       "roc_curve": {
         "fpr": [
           0.0,
-          0.009708737864077669,
-          0.1553398058252427,
-          0.1553398058252427,
-          0.2524271844660194,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.020833333333333332,
+          0.10416666666666667,
+          0.20833333333333334,
+          0.2708333333333333,
+          0.2916666666666667,
+          0.3333333333333333,
+          0.4583333333333333,
+          0.5833333333333334,
+          0.625,
+          0.6875,
+          0.8125,
+          0.8541666666666666,
+          0.9166666666666666,
+          0.9583333333333334,
           1.0
         ],
         "tpr": [
           0.0,
-          0.0,
-          0.0,
+          0.125,
           0.5,
-          0.5,
+          0.625,
+          0.875,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
           1.0
         ]
       }
     },
     "cv_metrics": {
-      "accuracy": 0.976,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1": 0.0,
-      "roc_auc": 0.3981
+      "accuracy": 0.9223,
+      "precision": 0.88,
+      "recall": 0.8297,
+      "f1": 0.8513,
+      "roc_auc": 0.9741
     },
-    "feature_importance": [],
-    "permutation_importance": [
+    "feature_importance": [
       {
         "feature": "startYear",
-        "importance": 0.0
+        "importance": 0.465042
+      },
+      {
+        "feature": "titleType_movie",
+        "importance": 0.240905
+      },
+      {
+        "feature": "titleType_tvSeries",
+        "importance": 0.201211
       },
       {
         "feature": "runtimeMinutes",
-        "importance": 0.0
+        "importance": 0.086246
+      },
+      {
+        "feature": "genre__Drama",
+        "importance": 0.003002
+      },
+      {
+        "feature": "genre__Comedy",
+        "importance": 0.001407
+      },
+      {
+        "feature": "genre__Romance",
+        "importance": 0.001236
+      },
+      {
+        "feature": "genre__Action",
+        "importance": 0.000951
       },
       {
         "feature": "isAdult",
         "importance": 0.0
+      }
+    ],
+    "permutation_importance": [
+      {
+        "feature": "startYear",
+        "importance": 0.240625
       },
       {
         "feature": "titleType",
+        "importance": 0.134375
+      },
+      {
+        "feature": "runtimeMinutes",
+        "importance": 0.003125
+      },
+      {
+        "feature": "isAdult",
         "importance": 0.0
       },
       {
@@ -239,120 +306,105 @@
       "table": [
         {
           "threshold": 0.2,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 0.7619,
+          "recall": 1.0,
+          "f1_score": 0.8649
         },
         {
           "threshold": 0.25,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.3,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.35,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.4,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.45,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.5,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.55,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.6,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.65,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.7,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.75,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         },
         {
           "threshold": 0.8,
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1_score": 0.0
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
         }
       ],
-      "best_threshold": 0.2,
-      "best_f1": 0.0
+      "best_threshold": 0.25,
+      "best_f1": 1.0
     },
     "calibration": {
       "predicted_probability": [
-        0.014821735530732868,
-        0.14892334216110498
+        0.02644544089412945,
+        0.1851102178487864,
+        0.8439824309287662,
+        0.9272650844243071
       ],
       "observed_frequency": [
-        0.019417475728155338,
-        0.0
+        0.0,
+        0.0,
+        1.0,
+        1.0
       ]
     },
     "error_analysis": {
       "false_positives": [],
-      "false_negatives": [
-        {
-          "startYear": 1929,
-          "runtimeMinutes": 68.0,
-          "titleType": "movie",
-          "genres": "Documentary",
-          "actual": 1,
-          "predicted": 0,
-          "success_probability": 0.0
-        },
-        {
-          "startYear": 1920,
-          "runtimeMinutes": 67.0,
-          "titleType": "movie",
-          "genres": "Horror,Mystery,Thriller",
-          "actual": 1,
-          "predicted": 0,
-          "success_probability": 0.0624
-        }
-      ]
+      "false_negatives": []
     },
-    "why_best_model_won": "KNN performed best because it balanced precision and recall most effectively (F1=0.000) while maintaining strong ROC-AUC (0.6092). Its top features also align with the observed data patterns in release timing, title format, and genre composition.",
+    "why_best_model_won": "Gradient Boosting performed best because it balanced precision and recall most effectively (F1=1.000) while maintaining strong ROC-AUC (1.0). Its top features also align with the observed data patterns in release timing, title format, and genre composition.",
     "tuning": null
   }
 }

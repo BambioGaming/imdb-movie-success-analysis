@@ -49,6 +49,7 @@ def cached_model_comparison(
     success_rating: float,
     success_votes: int,
     random_seed: int,
+    mode: str,
     force_retrain: bool = False,
 ):
     config = ModelingConfig(
@@ -58,6 +59,9 @@ def cached_model_comparison(
         success_rating=success_rating,
         success_votes=success_votes,
         random_state=random_seed,
+        mode=mode,
+        cv_folds=3 if mode == "fast" else 5,
+        sample_size=50000 if mode == "fast" else None,
     )
     return compare_models(load_dataset(), config=config, persist=True, force_retrain=force_retrain)
 
@@ -99,6 +103,7 @@ def render_modeling(filtered_df: pd.DataFrame, filters: dict) -> None:
         filters["success_rating"],
         filters["success_votes"],
         filters["random_seed"],
+        filters["model_mode"],
         force_retrain=refresh_models,
     )
 
