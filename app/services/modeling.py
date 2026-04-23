@@ -299,6 +299,33 @@ def _build_pipeline(estimator: Any) -> Pipeline:
     )
 
 
+def _build_model_result(
+    model_name: str,
+    pipeline: Pipeline,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+    cv_folds: int,
+    tuning_meta: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    predicted = pipeline.predict(X_test)
+    probabilities = _probabilities(pipeline, X_test)
+    result = {
+        "model_name": model_name,
+        "test_metrics": _evaluate_predictions(y_test.to_numpy(), predicted, probabilities),
+        "cv_metrics": _cross_validate_model(pipeline, X_train, y_train, cv_folds),
+        "feature_importance": _extract_feature_importance(pipeline),
+        "permutation_importance": _permutation_importance(pipeline, X_test, y_test),
+        "threshold_analysis": _threshold_diagnostics(y_test.to_numpy(), probabilities),
+        "calibration": _calibration_diagnostics(y_test.to_numpy(), probabilities),
+        "error_analysis": _error_analysis(pipeline, X_test, y_test, predicted, probabilities),
+    }
+    if tuning_meta is not None:
+        result["tuning"] = tuning_meta
+    return result
+
+
 def modeling_frame(df: pd.DataFrame, config: ModelingConfig) -> pd.DataFrame:
     filtered = df[
         (df["startYear"] >= config.year_start)
@@ -322,6 +349,51 @@ def modeling_frame(df: pd.DataFrame, config: ModelingConfig) -> pd.DataFrame:
             ]
         ).sample(frac=1, random_state=config.random_state)
     return framed.reset_index(drop=True)
+
+
+def normalize_model_weights(weights: dict[str, float]) -> dict[str, float]:
+    cleaned = {name: max(float(value), 0.0) for name, value in weights.items()}
+    total = sum(cleaned.values())
+    if total <= 0:
+        equal_weight = 1.0 / len(cleaned) if cleaned else 0.0
+        return {name: equal_weight for name in cleaned}
+    return {name: value / total for name, value in cleaned.items()}
+
+
+def predict_success_across_models(
+    payload: dict[str, Any],
+    models: dict[str, Pipeline],
+    weights: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    if not models:
+        raise ValueError("At least one fitted model is required for multi-model prediction.")
+
+    normalized_weights = normalize_model_weights(weights or {name: 1.0 for name in models})
+    predictions = []
+    weighted_probability = 0.0
+
+    for model_name, model in models.items():
+        result = predict_success(payload, model)
+        weight = normalized_weights.get(model_name, 0.0)
+        weighted_probability += result["success_probability"] * weight
+        predictions.append(
+            {
+                "model_name": model_name,
+                "weight": round(weight, 4),
+                **result,
+            }
+        )
+
+    ensemble_prediction = int(weighted_probability >= 0.5)
+    return {
+        "normalized_weights": normalized_weights,
+        "ensemble": {
+            "prediction": ensemble_prediction,
+            "predicted_label": "Successful" if ensemble_prediction else "Not Successful",
+            "success_probability": round(float(weighted_probability), 4),
+        },
+        "models": predictions,
+    }
 
 
 def _tuning_grids(random_state: int) -> dict[str, tuple[Any, dict[str, list[Any]]]]:
@@ -368,17 +440,10 @@ def _tune_pipeline(name: str, X_train: pd.DataFrame, y_train: pd.Series, config:
     )
 
 
-def compare_models(
+def _train_model_bundle(
     df: pd.DataFrame,
     config: ModelingConfig,
-    persist: bool = True,
-    force_retrain: bool = False,
-) -> dict[str, Any]:
-    if persist and not force_retrain:
-        cached = load_cached_comparison(config)
-        if cached is not None:
-            return cached
-
+) -> tuple[dict[str, Any], dict[str, Pipeline]]:
     modeling_df = modeling_frame(df, config)
     if len(modeling_df) < 300 or modeling_df["success"].nunique() < 2:
         raise ValueError(
@@ -400,18 +465,16 @@ def compare_models(
     for model_name, estimator in model_registry(config.random_state).items():
         pipeline = _build_pipeline(estimator)
         pipeline.fit(X_train, y_train)
-        predicted = pipeline.predict(X_test)
-        probabilities = _probabilities(pipeline, X_test)
-        test_metrics = _evaluate_predictions(y_test.to_numpy(), predicted, probabilities)
-        cv_metrics = _cross_validate_model(pipeline, X_train, y_train, config.cv_folds)
-        results.append(
-            {
-                "model_name": model_name,
-                "test_metrics": test_metrics,
-                "cv_metrics": cv_metrics,
-                "feature_importance": _extract_feature_importance(pipeline),
-            }
+        result = _build_model_result(
+            model_name=model_name,
+            pipeline=pipeline,
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            y_test=y_test,
+            cv_folds=config.cv_folds,
         )
+        results.append(result)
         fitted_models[model_name] = pipeline
 
     base_scores = sorted(results, key=lambda item: item["test_metrics"]["f1_score"], reverse=True)
@@ -421,19 +484,17 @@ def compare_models(
             if tuned is None:
                 continue
             tuned_name, tuned_pipeline, tuning_meta = tuned
-            predicted = tuned_pipeline.predict(X_test)
-            probabilities = _probabilities(tuned_pipeline, X_test)
-            test_metrics = _evaluate_predictions(y_test.to_numpy(), predicted, probabilities)
-            cv_metrics = _cross_validate_model(tuned_pipeline, X_train, y_train, min(3, config.cv_folds))
-            results.append(
-                {
-                    "model_name": tuned_name,
-                    "test_metrics": test_metrics,
-                    "cv_metrics": cv_metrics,
-                    "feature_importance": _extract_feature_importance(tuned_pipeline),
-                    "tuning": tuning_meta,
-                }
+            tuned_result = _build_model_result(
+                model_name=tuned_name,
+                pipeline=tuned_pipeline,
+                X_train=X_train,
+                y_train=y_train,
+                X_test=X_test,
+                y_test=y_test,
+                cv_folds=min(3, config.cv_folds),
+                tuning_meta=tuning_meta,
             )
+            results.append(tuned_result)
             fitted_models[tuned_name] = tuned_pipeline
 
     comparison_df = pd.DataFrame(
@@ -457,15 +518,20 @@ def compare_models(
         ]
     ).sort_values(["f1_score", "roc_auc", "accuracy"], ascending=False)
 
-    best_model_name = comparison_df.iloc[0]["model_name"]
-    best_model = fitted_models[best_model_name]
-    best_result = next(item for item in results if item["model_name"] == best_model_name)
-    best_probabilities = _probabilities(best_model, X_test)
-    best_predictions = best_model.predict(X_test)
-    threshold_analysis = _threshold_diagnostics(y_test.to_numpy(), best_probabilities)
-    calibration = _calibration_diagnostics(y_test.to_numpy(), best_probabilities)
-    error_analysis = _error_analysis(best_model, X_test, y_test, best_predictions, best_probabilities)
-    permutation = _permutation_importance(best_model, X_test, y_test)
+    ordered_models = comparison_df["model_name"].tolist()
+    results_by_name = {item["model_name"]: item for item in results}
+    models_payload = [results_by_name[name] for name in ordered_models]
+    best_model_name = ordered_models[0]
+    best_result = results_by_name[best_model_name]
+    best_reasoning = (
+        f"{best_model_name} performed best because it balanced precision and recall most effectively "
+        f"(F1={best_result['test_metrics']['f1_score']:.3f}) while maintaining strong ROC-AUC "
+        f"({best_result['test_metrics']['roc_auc'] if best_result['test_metrics']['roc_auc'] is not None else 'N/A'}). "
+        "Its top features also align with the observed data patterns in release timing, title format, and genre composition."
+    )
+    best_model_payload = dict(best_result)
+    best_model_payload["why_best_model_won"] = best_reasoning
+
     class_balance = {
         "positive_rate": round(float(y.mean()), 4),
         "class_counts": {str(label): int(count) for label, count in y.value_counts().to_dict().items()},
@@ -474,12 +540,6 @@ def compare_models(
         comparison_df.loc[:, ["model_name", "f1_score", "roc_auc", "accuracy", "cv_f1", "imbalance_strategy"]]
         .head(6)
         .to_dict(orient="records")
-    )
-    best_reasoning = (
-        f"{best_model_name} performed best because it balanced precision and recall most effectively "
-        f"(F1={best_result['test_metrics']['f1_score']:.3f}) while maintaining strong ROC-AUC "
-        f"({best_result['test_metrics']['roc_auc'] if best_result['test_metrics']['roc_auc'] is not None else 'N/A'}). "
-        "Its top features also align with the observed data patterns in release timing, title format, and genre composition."
     )
 
     output = {
@@ -497,24 +557,40 @@ def compare_models(
             ),
         },
         "comparison": comparison_df.to_dict(orient="records"),
+        "models": models_payload,
         "results_summary": summary_table,
-        "best_model": {
-            "model_name": best_model_name,
-            "test_metrics": best_result["test_metrics"],
-            "cv_metrics": best_result["cv_metrics"],
-            "feature_importance": best_result["feature_importance"],
-            "permutation_importance": permutation,
-            "threshold_analysis": threshold_analysis,
-            "calibration": calibration,
-            "error_analysis": error_analysis,
-            "why_best_model_won": best_reasoning,
-            "tuning": best_result.get("tuning"),
-        },
+        "best_model": best_model_payload,
     }
+    return output, fitted_models
+
+
+def compare_models(
+    df: pd.DataFrame,
+    config: ModelingConfig,
+    persist: bool = True,
+    force_retrain: bool = False,
+) -> dict[str, Any]:
+    if persist and not force_retrain:
+        cached = load_cached_comparison(config)
+        if cached is not None:
+            return cached
+    output, fitted_models = _train_model_bundle(df, config)
 
     if persist:
-        persist_model_artifacts(best_model, output, config)
+        persist_model_artifacts(fitted_models[output["best_model"]["model_name"]], output, config)
     return output
+
+
+def compare_models_with_artifacts(
+    df: pd.DataFrame,
+    config: ModelingConfig,
+    persist: bool = True,
+    force_retrain: bool = False,
+) -> tuple[dict[str, Any], dict[str, Pipeline]]:
+    output, fitted_models = _train_model_bundle(df, config)
+    if persist:
+        persist_model_artifacts(fitted_models[output["best_model"]["model_name"]], output, config)
+    return output, fitted_models
 
 
 def persist_model_artifacts(best_model: Pipeline, comparison_output: dict[str, Any], config: ModelingConfig) -> None:

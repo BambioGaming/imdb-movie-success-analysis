@@ -1,4 +1,4 @@
-# IMDb Movie Success Analysis
+ï»¿# IMDb Movie Success Analysis
 
 An end-to-end IMDb analytics and machine learning project structured like a small production application. It combines a reusable data pipeline, a FastAPI backend, a polished Streamlit dashboard, richer model comparison workflows, cached model artifacts, live row ingestion, and targeted tests in one portfolio-ready codebase.
 
@@ -15,21 +15,21 @@ An end-to-end IMDb analytics and machine learning project structured like a smal
 ```text
 imdb-movie-success-analysis-upgraded/
 +-- app/
-¦   +-- backend/
-¦   ¦   +-- routes/
-¦   ¦   +-- schemas/
-¦   ¦   +-- main.py
-¦   +-- config/
-¦   +-- dashboard/
-¦   ¦   +-- components/
-¦   +-- services/
-¦   +-- utils/
+Â¦   +-- backend/
+Â¦   Â¦   +-- routes/
+Â¦   Â¦   +-- schemas/
+Â¦   Â¦   +-- main.py
+Â¦   +-- config/
+Â¦   +-- dashboard/
+Â¦   Â¦   +-- components/
+Â¦   +-- services/
+Â¦   +-- utils/
 +-- assets/
 +-- data/
-¦   +-- processed/
-¦   +-- raw/
+Â¦   +-- processed/
+Â¦   +-- raw/
 +-- models/
-¦   +-- artifacts/
+Â¦   +-- artifacts/
 +-- notebooks/
 +-- tests/
 +-- api.py
@@ -75,9 +75,12 @@ The application filters to relevant title types such as movies, TV series, mini-
 - KPI cards and executive summary callouts
 - key findings section with auto-generated filtered insights
 - interactive Plotly charts with consistent dark-mode styling
-- content type, popularity, pairwise insight, trends, genre, model lab, explorer, and data quality tabs
+- a consolidated `Analysis & Visualizations` tab that groups overview, content type, popularity, pairwise, genre, trend, explorer, and data-quality analysis into one organized workspace
+- a richer `Model Lab` with full model selection, per-model diagnostics, confusion matrix, ROC support, threshold analysis, calibration, importance views, and dynamic model-weight controls
+- a dedicated `Prediction Sandbox` tab with sample input loading, reset actions, multi-model comparison, weighted ensemble probability, and clear input/output explanations
+- a new `About` tab with project context, objectives, dataset background, technologies, model explanations, and usage guidance
 - live data ingestion from CSV/TSV uploads and manual title entry
-- prediction sandbox with confidence interpretation
+- weighted ensemble ranking driven by normalized model weights
 - CSV downloads for filtered data and model results
 - dedicated data-quality analysis panel with missingness, outliers, suspicious patterns, and recommendations
 
@@ -161,6 +164,8 @@ These features are transformed with scaling, one-hot encoding, and custom multi-
 
 The dashboard and API compare multiple baseline models, evaluate them with holdout metrics and cross-validation, and in full mode run lightweight hyperparameter tuning on the top-performing candidates. The final comparison includes both performance and interpretability outputs.
 
+The updated dashboard also lets the analyst assign normalized weights to models and use those weights in a weighted ensemble score and weighted sandbox prediction.
+
 ## Results Summary
 
 A typical comparison table in the project reports:
@@ -241,6 +246,8 @@ This creates a cached prepared dataset in `data/processed/`.
 streamlit run dashboard.py
 ```
 
+Then open the local Streamlit URL shown in the terminal, typically `http://localhost:8501`.
+
 ### Run the backend
 
 ```bash
@@ -299,11 +306,14 @@ pytest
 - `app/services/data_loader.py`: shared loading, cleaning, filtering, live-row preparation, and caching
 - `app/services/analytics.py`: analytics summaries, key findings, and recommendation-style insights
 - `app/services/data_quality.py`: missingness, outlier, suspicious pattern, and quality assessment helpers
-- `app/services/modeling.py`: model training, comparison, caching, diagnostics, tuning, and prediction
+- `app/services/modeling.py`: model training, comparison, caching, per-model diagnostics, weighted multi-model prediction, and normalized weight helpers
 - `app/backend/main.py`: FastAPI app
 - `app/backend/routes/`: API endpoints with pagination and export support
 - `app/dashboard/main.py`: modular Streamlit entry point
-- `app/dashboard/components/`: reusable dashboard sections, filters, and modeling views
+- `app/dashboard/components/analysis.py`: unified analysis-and-visualizations tab
+- `app/dashboard/components/about.py`: project background and usage guide tab
+- `app/dashboard/components/modeling.py`: model lab and separate prediction sandbox UI
+- `app/dashboard/components/`: reusable dashboard sections, filters, layout, and modeling views
 - `assets/dashboard.css`: dashboard styling system
 - `tests/`: analytics, data quality, API, and modeling verification
 
@@ -318,4 +328,5 @@ pytest
 ## Why This Version Is Stronger
 
 This refactor turns the project from a single-file exploratory dashboard into a modular analytics application with shared services, clearer separation of concerns, richer model evaluation, API export capability, saved dashboard presets, live data ingestion, pairwise relationship analysis, dedicated data-quality reporting, and documentation that better supports coursework, portfolio presentation, and CV use.
+
 

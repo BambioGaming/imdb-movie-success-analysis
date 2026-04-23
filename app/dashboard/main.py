@@ -3,19 +3,11 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+from app.dashboard.components.about import render_about
+from app.dashboard.components.analysis import render_analysis_visualizations
 from app.dashboard.components.filters import render_sidebar_filters
 from app.dashboard.components.layout import apply_theme, render_callout, render_hero, render_kpi
-from app.dashboard.components.modeling import render_modeling
-from app.dashboard.components.sections import (
-    render_content_types,
-    render_data_quality,
-    render_explorer,
-    render_genres,
-    render_overview,
-    render_pairwise_insight,
-    render_popularity_quality,
-    render_trends,
-)
+from app.dashboard.components.modeling import render_modeling, render_prediction_sandbox
 from app.services.analytics import summary_metrics
 from app.services.data_loader import apply_filters, load_dataset
 
@@ -35,8 +27,7 @@ def run_dashboard() -> None:
     apply_theme()
     render_hero(
         "IMDb Movie Success Intelligence Hub",
-        "A modular analytics dashboard with reusable backend services, robust model comparison, "
-        "and an end-to-end pipeline for exploring what drives movie success on IMDb.",
+        "A portfolio-ready analytics dashboard for exploring IMDb title performance, comparing machine learning models, and testing prediction scenarios with a weighted multi-model sandbox.",
     )
 
     df = get_dashboard_dataset()
@@ -78,49 +69,32 @@ def run_dashboard() -> None:
     summary_col1, summary_col2 = st.columns([1.2, 1])
     with summary_col1:
         render_callout(
-            "Executive Summary",
-            f"Preset: {filters['preset_name']}. The current dashboard slice spans {filters['year_range'][0]} to {filters['year_range'][1]} "
-            f"with at least {filters['min_votes']:,} votes and a minimum rating threshold of {filters['min_rating']:.1f}.",
+            "Current Slice",
+            f"Preset: {filters['preset_name']}. This view spans {filters['year_range'][0]} to {filters['year_range'][1]} with at least {filters['min_votes']:,} votes and a minimum rating threshold of {filters['min_rating']:.1f}.",
         )
     with summary_col2:
         render_callout(
-            "Model Context",
-            f"The modeling lab is set to {filters['model_mode'].title()} mode with success defined as rating >= {filters['success_rating']:.1f} "
-            f"and votes >= {filters['success_votes']:,}.",
+            "Model Definition",
+            f"Modeling is running in {filters['model_mode'].title()} mode, with success defined as rating >= {filters['success_rating']:.1f} and votes >= {filters['success_votes']:,}.",
         )
 
     tabs = st.tabs(
         [
-            "📊 Overview",
-            "🎭 Content Types",
-            "⭐ Popularity vs Quality",
-            "🕸️ Pairwise Insight",
-            "🎬 Genre Intelligence",
-            "📅 Trends",
-            "🤖 Model Lab",
-            "📋 Explorer",
-            "🧪 Data Quality",
+            "Analysis & Visualizations",
+            "Model Lab",
+            "Prediction Sandbox",
+            "About",
         ]
     )
 
     with tabs[0]:
-        render_overview(filtered_df)
+        render_analysis_visualizations(filtered_df)
     with tabs[1]:
-        render_content_types(filtered_df)
-    with tabs[2]:
-        render_popularity_quality(filtered_df)
-    with tabs[3]:
-        render_pairwise_insight(filtered_df)
-    with tabs[4]:
-        render_genres(filtered_df)
-    with tabs[5]:
-        render_trends(filtered_df)
-    with tabs[6]:
         render_modeling(filtered_df, filters)
-    with tabs[7]:
-        render_explorer(filtered_df)
-    with tabs[8]:
-        render_data_quality(filtered_df)
+    with tabs[2]:
+        render_prediction_sandbox(filtered_df, filters)
+    with tabs[3]:
+        render_about()
 
 
 if __name__ == "__main__":
