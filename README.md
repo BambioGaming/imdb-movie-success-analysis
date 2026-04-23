@@ -325,8 +325,5 @@ pytest
 - add deployment configuration for API and dashboard hosting
 - add CI for tests and linting
 
-## Why This Version Is Stronger
-
-This refactor turns the project from a single-file exploratory dashboard into a modular analytics application with shared services, clearer separation of concerns, richer model evaluation, API export capability, saved dashboard presets, live data ingestion, pairwise relationship analysis, dedicated data-quality reporting, and documentation that better supports coursework, portfolio presentation, and CV use.
 
 
